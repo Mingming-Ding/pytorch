@@ -7,9 +7,21 @@ input/output types, metadata, config, function signatures etc.
 import collections
 import dataclasses
 import functools
+import itertools
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Callable, Dict, Iterable, List, NewType, Optional, Set, Union
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Iterable,
+    List,
+    NewType,
+    Optional,
+    Sequence,
+    Set,
+    Union,
+)
 
 import torch
 import torch.utils._pytree as pytree
@@ -155,9 +167,37 @@ class InputAliasInfo:
 
 
 @dataclass
+class MemoryFormatMeta:
+    # For static shapes we assume tangents have the same strideness as outputs
+    size: Optional[Sequence[int]] = None
+    stride: Optional[Sequence[int]] = None
+
+    # For dynamic shapes we assume the same memory format: contiguous, channels_last etc.
+    memory_format: Optional[torch.memory_format] = None
+
+    @staticmethod
+    def from_tensor(t: torch.Tensor) -> Optional["MemoryFormatMeta"]:
+        is_static_shape = True
+        for s in itertools.chain(t.shape, t.stride()):
+            if not isinstance(s, int):
+                is_static_shape = False
+                break
+
+        if is_static_shape:
+            return MemoryFormatMeta(
+                size=t.size(),
+                stride=t.stride(),
+            )
+
+        return MemoryFormatMeta(
+            memory_format=torch._prims_common.suggest_memory_format(t),
+        )
+
+
+@dataclass
 class PlainTensorMeta:
     unwrapped_idx: int
-    memory_format: Optional[torch.memory_format] = None
+    memory_format: Optional[MemoryFormatMeta] = None
 
 
 @dataclass
@@ -203,7 +243,7 @@ class SubclassCreationMeta:
 
     # Used at runtime to determine the subclass type, so we don't need to save the original subclass
     original_subclass_type: Optional[type] = None
-    memory_format: Optional[torch.memory_format] = None
+    memory_format: Optional[MemoryFormatMeta] = None
 
     def compute_outer_size_and_stride(
         self,
