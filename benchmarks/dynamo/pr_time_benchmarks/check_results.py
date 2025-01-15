@@ -219,6 +219,14 @@ def main():
             f"There was some failures you can use the new reference expected result stored at path:"
             f"{reference_expected_results_path} and printed above\n"
         )
+        print(
+            "To reproduce locally follow the following instrucitons, note that absolute instruciton count are going "
+            "to be different than on the CI, hence you might want to run locally with and without your change:\n"
+            "pip install fbscribelogger \n"
+            "cd benchmarks/dynamo/pr_time_benchmarks/ \n"
+            "run PYTHONPATH=./ python benchmarks/BENCHMARK.py result.csv \n"
+            "note that BENCHMARK.py is the name of the file containing the failing benchmark."
+        )
         sys.exit(1)
     else:
         print("All benchmarks passed")
