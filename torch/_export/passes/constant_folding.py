@@ -5,6 +5,9 @@ from typing import Any, Callable, Dict, Optional
 
 import torch
 import torch.utils._pytree as pytree
+from torch.ao.quantization.pt2e._affine_quantization import  (
+    AffineQuantizedMinMaxObserver, # noqa: F401
+)
 
 
 aten = torch.ops.aten
@@ -75,6 +78,7 @@ class ConstantFolder(torch.fx.Interpreter):
             torch.ops.quantized_decomposed.dequantize_per_channel.default,
             torch.ops.quantized_decomposed.dequantize_per_tensor.default,
             torch.ops.quantized_decomposed.dequantize_per_tensor.tensor,
+            torch.ops.quant.dequantize_affine,
         ]:
             # For the pattern fp32_weight -> q -> dq
             # We only folding fp32_weight -> q

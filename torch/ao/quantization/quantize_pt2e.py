@@ -11,6 +11,9 @@ from torch.ao.quantization.quantizer import (  # noqa: F401
     Quantizer,
     SharedQuantizationSpec,
 )
+from torch.ao.quantization.pt2e._affine_quantization import  (# noqa: F401
+    AffineQuantizedMinMaxObserver,
+)
 from torch.fx import GraphModule, Node
 from torch.fx.passes.infra.pass_manager import PassManager
 
@@ -188,6 +191,7 @@ _QUANT_OPS = [
     torch.ops.quantized_decomposed.quantize_per_tensor.default,
     torch.ops.quantized_decomposed.quantize_per_tensor.tensor,
     torch.ops.quantized_decomposed.quantize_per_channel.default,
+    torch.ops.quant.quantize_affine,
 ]
 
 
